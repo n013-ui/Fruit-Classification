@@ -318,6 +318,21 @@ body {
 const GAS_URL  = 'https://script.google.com/macros/s/AKfycbw9m9Vfr8F3KOozaHTC7u3Zao_lHlYUveyfq8CoH3asJ2erCs7ChWiGhXYu5ztoeZk/exec';
 const Q_TIME   = 8;   // 每題秒數
 
+// ── 所有圖片路徑（用於頁面一開啟就預載） ────────────────────────
+const ALL_SRCS = [
+  'images/橘子_01.png','images/橘子_02.jpg','images/橘子_03.jpg',
+  'images/橘子_04.jpg','images/橘子_05.jpg','images/橘子_06.jpg',
+  'images/橘子_07.jpg','images/橘子_08.jpg','images/橘子_09.jpg',
+  'images/橘子_10.jpg','images/柳丁_01.jpg','images/柳丁_02.jpg',
+  'images/柳丁_03.png','images/柳丁_04.jpg','images/柳丁_05.jpg',
+  'images/柳丁_06.png','images/柳丁_07.jpg','images/柳丁_08.jpg',
+  'images/柳丁_09.jpg','images/柳丁_10.jpg',
+];
+
+function preloadAllImages() {
+  ALL_SRCS.forEach(src => { const img = new Image(); img.src = src; });
+}
+
 // ── 狀態 ─────────────────────────────────────────────────────────
 let playerKey        = '';
 let myName           = '';
@@ -386,6 +401,7 @@ async function doJoin() {
 function enterLobby() {
   document.getElementById('lobby-name').textContent = myName;
   showScreen('lobby');
+  preloadAllImages(); // 趁等待老師開始的時間，把 20 張圖全部預載進快取
   startPolling();
 }
 
@@ -461,14 +477,31 @@ function enterQuestion(d) {
 
   myAnswer = null;
 
-  // 時間同步：用伺服器時間算剩餘，最多顯示 Q_TIME 秒
-  const elapsedMs  = d.serverTime - d.qStart;          // 可能為負（題目還沒正式開始）
-  const remainSec  = Math.min(Q_TIME, Math.max(0, Q_TIME - elapsedMs / 1000));
-
-  // questionStartLocal = 本題在本機時鐘的「開始時刻」
+  // questionStartLocal = 本題在本機時鐘的「開始時刻」（可能是未來的時間點）
+  const elapsedMs = d.serverTime - d.qStart;  // 負值 = 題目尚未正式開始
   questionStartLocal = Date.now() - elapsedMs;
 
-  startCountdown(remainSec);
+  // 等圖片實際顯示後才啟動倒數，確保學生看到圖才開始計時
+  let cdStarted = false;
+  const launchCountdown = () => {
+    if (cdStarted) return;
+    cdStarted = true;
+    // 重新計算「此刻距題目開始過了多久」，避免等圖時間被扣掉
+    const nowElapsed = (Date.now() - questionStartLocal) / 1000;
+    const secs = Math.min(Q_TIME, Math.max(1, Q_TIME - nowElapsed));
+    startCountdown(secs);
+  };
+
+  const imgEl = document.getElementById('q-img');
+  imgEl.onload  = launchCountdown;
+  imgEl.onerror = launchCountdown;  // 就算圖掛掉也要開始倒數
+  imgEl.src = d.imageSrc || '';
+
+  // 圖片已在快取（預載成功）→ complete 為 true，直接啟動
+  if (imgEl.complete && imgEl.naturalWidth > 0) launchCountdown();
+
+  // 保險用：最多等 2 秒，圖片若還沒好就強制開始
+  setTimeout(launchCountdown, 2000);
 }
 
 // ── 倒數 ─────────────────────────────────────────────────────────
@@ -514,9 +547,16 @@ function submitAnswer(ans) {
   // ③ 計算反應時間
   const responseMs = Math.max(0, Date.now() - questionStartLocal);
 
-  // ④ 非同步送出（fire & forget）
-  gasGet({action:'answer', playerKey, qNum: lastQNum, ans, ms: responseMs})
-    .catch(() => { /* 送出失敗靜默處理，已鎖定不影響體驗 */ });
+  // ④ 非同步送出，最多重試 3 次（避免瞬間網路抖動導致答案遺失）
+  (async () => {
+    for (let i = 0; i < 3; i++) {
+      try {
+        const r = await gasGet({action:'answer', playerKey, qNum: lastQNum, ans, ms: responseMs});
+        if (r.ok || r.already) return; // 成功，結束
+      } catch(e) { /* 繼續重試 */ }
+      if (i < 2) await new Promise(res => setTimeout(res, 700)); // 等 0.7 秒再試
+    }
+  })();
 }
 
 // ── 公佈答案 ─────────────────────────────────────────────────────
@@ -608,6 +648,9 @@ function enterFinal(d) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('login').classList.contains('active')) doJoin();
 });
+
+// ── 頁面一開啟就開始預載圖片（填名字的時間夠讓所有圖進快取）───
+preloadAllImages();
 </script>
 </body>
 </html>
