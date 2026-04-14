@@ -3,520 +3,366 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>教師控制台 — 水果分類大挑戰</title>
+<title>水果分類大挑戰 — 教師控制台</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
+* { box-sizing:border-box; margin:0; padding:0; }
 body {
-  font-family: 'Microsoft JhengHei', 'PingFang TC', 'Apple LiGothic Medium', sans-serif;
-  background: #0d0d1a;
-  color: #fff;
-  min-height: 100vh;
+  font-family:'Microsoft JhengHei','PingFang TC',sans-serif;
+  background:#0d0d1a; color:#fff; min-height:100vh;
 }
 
-/* ── TOP BAR ─────────────────────────────────────── */
+/* ── HEADER ───────────────────────────────────── */
 .topbar {
-  background: linear-gradient(135deg, #16213e, #1a2a4a);
-  padding: 12px 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-  position: sticky; top: 0; z-index: 100;
-  flex-wrap: wrap; gap: 8px;
+  background:rgba(0,0,0,0.5); border-bottom:1px solid rgba(255,255,255,0.08);
+  padding:14px 20px; display:flex; align-items:center; gap:12px;
+  position:sticky; top:0; z-index:50;
 }
-.topbar-left h1  { font-size: 1rem; font-weight: 900; letter-spacing: 2px; color: #FFB347; }
-.topbar-left sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
-.topbar-right { display: flex; align-items: center; gap: 10px; }
-
-.btn-gas {
-  padding: 6px 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 8px; color: rgba(255,255,255,0.6);
-  font-size: 0.78rem; font-family: inherit; cursor: pointer;
-  display: flex; align-items: center; gap: 5px;
-  transition: border-color 0.15s, color 0.15s;
-}
-.btn-gas:hover { border-color: rgba(255,179,71,0.5); color: #FFB347; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: #e74c3c; flex-shrink: 0; }
-.dot.ok { background: #2ecc71; }
-
-/* ── SCREENS ─────────────────────────────────────── */
-.screen { display: none; }
-.screen.active { display: block; }
-
-/* ── LOBBY SCREEN ────────────────────────────────── */
-.lobby-wrap {
-  max-width: 860px; margin: 0 auto; padding: 24px 20px;
-}
-
-.lobby-status {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px; padding: 20px 24px; margin-bottom: 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px;
-}
-
-.status-left h2 { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.topbar h1 { font-size:1.1rem; font-weight:900; color:#FFB347; flex:1; }
 .status-badge {
-  display: inline-block; padding: 5px 16px; border-radius: 20px;
-  font-size: 0.85rem; font-weight: bold; letter-spacing: 1px;
+  padding:4px 12px; border-radius:20px; font-size:0.78rem; font-weight:700;
 }
-.badge-lobby    { background: rgba(255,179,71,0.15); color: #FFB347; border: 1px solid rgba(255,179,71,0.4); }
-.badge-question { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.4); }
-.badge-reveal   { background: rgba(39,174,96,0.15); color: #27ae60; border: 1px solid rgba(39,174,96,0.4); }
-.badge-finished { background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); }
-
-.count-box { text-align: center; }
-.count-num   { font-size: 2.8rem; font-weight: 900; color: #FFB347; line-height: 1; }
-.count-label { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 3px; }
-
-.btn-start {
-  padding: 14px 36px;
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
-  border: none; border-radius: 12px;
-  color: #fff; font-size: 1.1rem; font-weight: 900;
-  font-family: inherit; letter-spacing: 2px; cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.2s;
+.badge-waiting   { background:rgba(52,73,94,0.8);   color:#aaa; }
+.badge-announced { background:rgba(39,174,96,0.3);  color:#2ecc71; }
+.last-upd { font-size:0.72rem; color:rgba(255,255,255,0.3); white-space:nowrap; }
+.btn-gas {
+  background:transparent; border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px; padding:6px 10px; cursor:pointer;
+  display:flex; align-items:center; gap:6px; color:#fff; font-size:0.8rem;
+  font-family:inherit;
 }
-.btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(46,204,113,0.4); }
-.btn-start:active { transform: scale(0.97); }
-.btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.dot { width:8px; height:8px; border-radius:50%; background:#e74c3c; }
+.dot.ok { background:#2ecc71; }
 
+/* ── LAYOUT ───────────────────────────────────── */
+.main { padding:16px 20px; max-width:1100px; margin:0 auto; }
+
+/* ── STAT CARDS ───────────────────────────────── */
+.stat-row {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;
+}
+.stat-card {
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px; padding:16px; text-align:center;
+}
+.stat-card .sv { font-size:2.2rem; font-weight:900; color:#FFB347; }
+.stat-card .sl { font-size:0.78rem; color:rgba(255,255,255,0.45); margin-top:4px; }
+
+/* ── ACTION BUTTONS ───────────────────────────── */
+.action-row { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+.btn-announce {
+  padding:14px 28px;
+  background:linear-gradient(135deg,#e67e22,#f39c12);
+  border:none; border-radius:12px; color:#fff;
+  font-size:1rem; font-weight:900; font-family:inherit; cursor:pointer;
+  letter-spacing:1px; transition:opacity .2s;
+}
+.btn-announce:hover { opacity:.9; }
+.btn-announce:disabled { opacity:.4; cursor:default; }
 .btn-clear {
-  padding: 9px 20px;
-  background: rgba(231,76,60,0.15);
-  border: 1px solid rgba(231,76,60,0.35);
-  border-radius: 10px; color: #e74c3c;
-  font-size: 0.85rem; font-family: inherit; cursor: pointer;
-  transition: background 0.15s;
+  padding:14px 20px;
+  background:rgba(231,76,60,0.15); border:1px solid rgba(231,76,60,0.4);
+  border-radius:12px; color:#e74c3c;
+  font-size:0.9rem; font-weight:700; font-family:inherit; cursor:pointer;
 }
-.btn-clear:hover { background: rgba(231,76,60,0.3); }
-
-/* Player grid in lobby */
-.player-grid-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px; padding: 18px 20px;
-}
-.player-grid-title { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
-.player-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.player-chip {
-  background: rgba(255,179,71,0.08); border: 1px solid rgba(255,179,71,0.2);
-  border-radius: 20px; padding: 5px 14px;
-  font-size: 0.85rem; color: rgba(255,255,255,0.8);
-}
-.empty-lobby { text-align: center; padding: 32px; color: rgba(255,255,255,0.25); font-size: 0.9rem; }
-
-/* ── GAME SCREEN ─────────────────────────────────── */
-.game-wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
-
-.game-top {
-  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px;
+.btn-refresh {
+  padding:14px 20px;
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);
+  border-radius:12px; color:#fff;
+  font-size:0.9rem; font-family:inherit; cursor:pointer;
 }
 
-.info-card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px; padding: 16px 18px; text-align: center;
-}
-.info-card .ic-label { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
-.info-card .ic-val   { font-size: 2rem; font-weight: 900; line-height: 1; }
-.ic-blue   { color: #3498db; }
-.ic-orange { color: #e67e22; }
-.ic-green  { color: #2ecc71; }
-
-/* Big countdown */
-.big-countdown {
-  font-size: 2.8rem; font-weight: 900;
-  transition: color 0.3s;
-}
-.big-countdown.urgent { color: #e74c3c; animation: pls 0.4s infinite alternate; }
-@keyframes pls { from { transform: scale(1); } to { transform: scale(1.1); } }
-
-.game-main {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
-}
-
-.question-preview {
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center;
-  min-height: 300px;
-}
-.question-preview img {
-  width: 100%; max-height: 280px; object-fit: contain;
-  background: #111;
-}
-.q-preview-info { padding: 12px 16px; text-align: center; width: 100%; }
-.q-preview-info .qi-label { font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
-
-/* Answered list */
-.answered-panel {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px; padding: 16px; overflow-y: auto; max-height: 340px;
-}
-.answered-panel h3 { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
-.answered-count-big { font-size: 2.5rem; font-weight: 900; color: #3498db; margin-bottom: 6px; }
-.answer-progress-bar {
-  height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 14px;
-}
-.answer-progress-fill { height: 100%; background: #3498db; border-radius: 4px; transition: width 0.5s; }
-
-.manual-btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.btn-manual {
-  padding: 8px 18px; border: none; border-radius: 8px;
-  font-family: inherit; font-size: 0.85rem; font-weight: bold; cursor: pointer;
-}
-.btn-reveal  { background: rgba(46,204,113,0.2); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); }
-.btn-next    { background: rgba(52,152,219,0.2); color: #3498db; border: 1px solid rgba(52,152,219,0.4); }
-.btn-reveal:hover { background: rgba(46,204,113,0.35); }
-.btn-next:hover   { background: rgba(52,152,219,0.35); }
-
-/* Reveal stats bars */
-.reveal-stats {
-  margin-top: 14px;
-}
-.stat-row { margin-bottom: 10px; }
-.stat-label { font-size: 0.82rem; color: rgba(255,255,255,0.6); display: flex; justify-content: space-between; margin-bottom: 4px; }
-.stat-bar { height: 22px; border-radius: 8px; background: rgba(255,255,255,0.07); overflow: hidden; }
-.stat-fill-tangerine { height: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); border-radius: 8px; transition: width 0.6s; }
-.stat-fill-orange    { height: 100%; background: linear-gradient(90deg, #d68910, #f0b429); border-radius: 8px; transition: width 0.6s; }
-
-.correct-badge {
-  display: inline-block; padding: 3px 12px; border-radius: 10px;
-  font-size: 0.75rem; font-weight: bold; margin-left: 6px;
-  background: rgba(46,204,113,0.2); color: #2ecc71;
-}
-
-/* ── FINAL SCREEN ────────────────────────────────── */
-.final-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-
-.final-header { text-align: center; margin-bottom: 24px; }
-.final-header h2 { font-size: 1.8rem; font-weight: 900; color: #FFD700; letter-spacing: 3px; }
-
-/* Tabs */
-.tabs { display: flex; gap: 0; background: rgba(255,255,255,0.04); border-radius: 10px; overflow: hidden; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08); }
+/* ── TABS ─────────────────────────────────────── */
+.tabs { display:flex; gap:4px; margin-bottom:16px; }
 .tab-btn {
-  flex: 1; padding: 10px 8px;
-  background: none; border: none; color: rgba(255,255,255,0.45);
-  font-size: 0.88rem; font-family: inherit; font-weight: bold; cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  padding:10px 18px; border:none; border-radius:10px;
+  background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.5);
+  font-size:0.88rem; font-weight:700; font-family:inherit; cursor:pointer;
 }
-.tab-btn.active { background: rgba(255,215,0,0.12); color: #FFD700; }
-.tab-btn:hover:not(.active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
+.tab-btn.active { background:rgba(255,179,71,0.2); color:#FFB347; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
 
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-/* Ranking table */
-.rank-table { width: 100%; border-collapse: collapse; }
+/* ── RANK TABLE ───────────────────────────────── */
+.rank-table { width:100%; border-collapse:collapse; }
 .rank-table th {
-  padding: 11px 14px; text-align: left; font-size: 0.78rem;
-  color: rgba(255,255,255,0.35); border-bottom: 1px solid rgba(255,255,255,0.08);
-  font-weight: bold; letter-spacing: 0.5px;
+  padding:10px 14px; text-align:left;
+  font-size:0.78rem; color:rgba(255,255,255,0.4);
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }
-.rank-table th.ctr { text-align: center; }
 .rank-table td {
-  padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 0.9rem;
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:0.9rem;
 }
-.rank-table td.ctr { text-align: center; }
-.rank-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+.rank-table tr:last-child td { border-bottom:none; }
+.rank-num { font-weight:900; font-size:1rem; }
+.score-bar-wrap { display:flex; align-items:center; gap:8px; }
+.score-bar { flex:1; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; }
+.score-bar-fill { height:100%; background:linear-gradient(90deg,#e67e22,#f39c12); border-radius:4px; }
 
-.score-bar-wrap { display: flex; align-items: center; gap: 10px; }
-.score-bar { flex: 1; height: 7px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; min-width: 50px; }
-.score-bar-fill { height: 100%; background: #27ae60; border-radius: 4px; transition: width 0.4s; }
-
-/* Question stats */
-.qstat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+/* ── PER-QUESTION STATS ───────────────────────── */
+.qstat-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px;
+}
 .qstat-card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px; padding: 14px; overflow: hidden;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; overflow:hidden;
 }
-.qstat-card img { width: 100%; height: 110px; object-fit: contain; background: #111; border-radius: 8px; margin-bottom: 10px; }
-.qstat-info { }
-.qstat-num { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
-.qstat-ans { font-size: 0.82rem; font-weight: bold; margin-bottom: 8px; }
-.qstat-bar-label { font-size: 0.7rem; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; margin-bottom: 3px; }
-.qstat-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
-.qstat-bar-fill { height: 100%; background: #27ae60; border-radius: 3px; }
-.qstat-bar-fill.wrong { background: #e74c3c; }
-.qstat-correct-rate { font-size: 0.8rem; font-weight: bold; color: #2ecc71; }
+.qstat-card img { width:100%; aspect-ratio:1; object-fit:cover; }
+.qstat-info { padding:10px; font-size:0.8rem; }
+.qstat-ans  { color:rgba(255,255,255,0.5); margin-bottom:6px; }
+.qstat-bar-row { display:flex; justify-content:space-between; margin-bottom:3px; }
+.qbar { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:6px; }
+.qbar-fill         { height:100%; background:#2ecc71; border-radius:3px; }
+.qbar-fill.wrong   { background:#e74c3c; }
+.qstat-rate { font-size:0.85rem; font-weight:700; color:#FFB347; }
 
-/* Toast */
-.toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(60px);
-  background: #16213e; border: 1px solid rgba(255,255,255,0.15);
-  color: #fff; padding: 10px 20px; border-radius: 10px;
-  font-size: 0.88rem; opacity: 0;
-  transition: transform 0.3s, opacity 0.3s; z-index: 999;
-}
-.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+/* ── EMPTY STATE ──────────────────────────────── */
+.empty { text-align:center; padding:48px 0; color:rgba(255,255,255,0.25); font-size:0.9rem; }
 
-/* ── GAS MODAL ─────────────────────────────────── */
-#gas-modal {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.72); z-index: 9999;
-  align-items: center; justify-content: center;
+/* ── GAS MODAL ────────────────────────────────── */
+.modal-bg {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7);
+  align-items:center; justify-content:center; z-index:200;
 }
-#gas-modal.open { display: flex; }
-.gas-modal-box {
-  background: #16213e; border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 18px; padding: 26px 24px;
-  max-width: 400px; width: 92%;
+.modal-bg.open { display:flex; }
+.modal {
+  background:#1e2a3a; border:1px solid rgba(255,255,255,0.15);
+  border-radius:18px; padding:28px; width:92%; max-width:400px;
 }
-.gas-modal-box h3 { font-size: 0.95rem; color: #FFB347; margin-bottom: 5px; }
-.gas-modal-box p  { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 14px; line-height: 1.6; }
-.gas-modal-box input {
-  width: 100%; padding: 10px 12px;
-  background: rgba(255,255,255,0.07);
-  border: 1.5px solid rgba(255,255,255,0.18);
-  border-radius: 8px; color: #fff;
-  font-family: monospace; font-size: 0.8rem; margin-bottom: 12px;
+.modal h3 { font-size:1rem; margin-bottom:16px; }
+.modal input {
+  width:100%; padding:12px 14px;
+  background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:10px; color:#fff; font-size:0.82rem; font-family:monospace; margin-bottom:14px;
 }
-.gas-modal-box input:focus { outline: none; border-color: #FFB347; }
-.gas-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-.gas-modal-btns button {
-  padding: 8px 18px; border: none; border-radius: 8px;
-  font-family: inherit; font-size: 0.88rem; font-weight: bold; cursor: pointer;
+.modal-btns { display:flex; gap:10px; }
+.modal-btns button {
+  flex:1; padding:12px; border:none; border-radius:10px;
+  font-size:0.95rem; font-weight:700; font-family:inherit; cursor:pointer;
 }
-.gas-save   { background: #e67e22; color: #fff; }
-.gas-cancel { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
-
-@media (max-width: 640px) {
-  .game-top  { grid-template-columns: 1fr 1fr; }
-  .game-main { grid-template-columns: 1fr; }
-  .qstat-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-}
+.btn-msave   { background:#e67e22; color:#fff; }
+.btn-mcancel { background:rgba(255,255,255,0.1); color:#fff; }
 </style>
 </head>
 <body>
 
-<!-- ── TOP BAR ───────────────────────────────────────── -->
+<!-- ── 頂部 ──────────────────────────────────────────────── -->
 <div class="topbar">
-  <div class="topbar-left">
-    <h1>水果分類大挑戰 — 教師控制台</h1>
-    <sub>Teacher Dashboard</sub>
-  </div>
-  <div class="topbar-right">
-    <button class="btn-gas" onclick="openGasModal()">
-      <span class="dot" id="gas-dot"></span> GAS 連線設定
-    </button>
-  </div>
+  <h1>🍊 水果分類 教師控制台</h1>
+  <span class="status-badge badge-waiting" id="status-badge">等待中</span>
+  <span class="last-upd" id="last-upd">—</span>
+  <button class="btn-gas" onclick="openGasModal()">
+    <span class="dot" id="gas-dot"></span>GAS 設定
+  </button>
 </div>
 
-<!-- ── 大廳畫面 ──────────────────────────────────────── -->
-<div id="screen-lobby" class="screen active">
-  <div class="lobby-wrap">
+<!-- ── 主內容 ─────────────────────────────────────────────── -->
+<div class="main">
 
-    <div class="lobby-status">
-      <div class="status-left">
-        <h2>目前狀態</h2>
-        <span class="status-badge badge-lobby" id="status-badge">等待加入</span>
-        <div style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:8px" id="last-update">尚未連線</div>
-      </div>
-      <div class="count-box">
-        <div class="count-num" id="lobby-count">0</div>
-        <div class="count-label">已加入學生</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
-        <button class="btn-start" id="btn-start" onclick="teacherStart()" disabled>▶ 開始遊戲</button>
-        <button class="btn-clear" onclick="teacherClear()">清除重置</button>
-      </div>
+  <!-- 統計卡片 -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="sv" id="sv-count">0</div>
+      <div class="sl">已提交人數</div>
     </div>
-
-    <div class="player-grid-card">
-      <div class="player-grid-title" id="grid-title">等待學生加入…</div>
-      <div class="player-grid" id="player-grid">
-        <div class="empty-lobby">尚無學生加入</div>
-      </div>
+    <div class="stat-card">
+      <div class="sv" id="sv-avg">—</div>
+      <div class="sl">平均答對題數</div>
     </div>
-
+    <div class="stat-card">
+      <div class="sv" id="sv-status">等待中</div>
+      <div class="sl">目前狀態</div>
+    </div>
   </div>
+
+  <!-- 操作按鈕 -->
+  <div class="action-row">
+    <button class="btn-announce" id="btn-announce" onclick="doAnnounce()">公告成績</button>
+    <button class="btn-refresh"  onclick="fetchNow()">手動重新整理</button>
+    <button class="btn-clear"    onclick="doClear()">新一輪（清除資料）</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-rank"  onclick="switchTab('rank',  this)">排行榜</button>
+    <button class="tab-btn"        id="tab-qstat" onclick="switchTab('qstat', this)">各題統計</button>
+  </div>
+
+  <!-- 排行榜 -->
+  <div class="tab-panel active" id="panel-rank">
+    <table class="rank-table">
+      <thead>
+        <tr>
+          <th>名次</th>
+          <th>姓名</th>
+          <th>答對題數</th>
+          <th>正確率</th>
+          <th>總反應時間</th>
+          <th>提交時間</th>
+        </tr>
+      </thead>
+      <tbody id="rank-tbody">
+        <tr><td colspan="6" class="empty">尚無資料，等待學生提交…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 各題統計 -->
+  <div class="tab-panel" id="panel-qstat">
+    <div id="qstat-grid" class="qstat-grid">
+      <div class="empty" style="grid-column:1/-1">尚無資料</div>
+    </div>
+  </div>
+
 </div>
 
-<!-- ── 遊戲進行畫面 ──────────────────────────────────── -->
-<div id="screen-game" class="screen">
-  <div class="game-wrap">
-
-    <div class="game-top">
-      <div class="info-card">
-        <div class="ic-label">目前題目</div>
-        <div class="ic-val ic-blue" id="g-qnum">1 / 20</div>
-      </div>
-      <div class="info-card">
-        <div class="ic-label">倒數</div>
-        <div class="ic-val big-countdown" id="g-countdown">5</div>
-      </div>
-      <div class="info-card">
-        <div class="ic-label">已作答</div>
-        <div class="ic-val ic-green" id="g-answered">0</div>
-      </div>
-    </div>
-
-    <div class="game-main">
-      <!-- 題目預覽 -->
-      <div class="question-preview">
-        <img id="g-img" src="" alt="目前題目">
-        <div class="q-preview-info">
-          <div class="qi-label">本題圖片</div>
-          <!-- 公佈答案時顯示 -->
-          <div id="reveal-answer-row" style="display:none; margin-top:6px">
-            <span style="font-size:0.82rem;color:rgba(255,255,255,0.5)">正確答案：</span>
-            <span id="reveal-answer-val" style="font-size:1rem;font-weight:900;color:#2ecc71"></span>
-          </div>
-          <!-- 統計 bar（公佈答案時顯示） -->
-          <div class="reveal-stats" id="reveal-stats" style="display:none">
-            <div class="stat-row">
-              <div class="stat-label">
-                <span>🍊 橘子 <span class="correct-badge" id="t-correct-badge" style="display:none">正確答案</span></span>
-                <span id="stat-t-count">0 人</span>
-              </div>
-              <div class="stat-bar"><div class="stat-fill-tangerine" id="stat-t-fill" style="width:0%"></div></div>
-            </div>
-            <div class="stat-row">
-              <div class="stat-label">
-                <span>🟡 柳丁 <span class="correct-badge" id="o-correct-badge" style="display:none">正確答案</span></span>
-                <span id="stat-o-count">0 人</span>
-              </div>
-              <div class="stat-bar"><div class="stat-fill-orange" id="stat-o-fill" style="width:0%"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 右側面板 -->
-      <div class="answered-panel">
-        <h3>作答狀況</h3>
-        <div class="answered-count-big" id="ans-count-big">0</div>
-        <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-bottom:10px" id="ans-count-label">人已作答</div>
-        <div class="answer-progress-bar">
-          <div class="answer-progress-fill" id="ans-progress" style="width:0%"></div>
-        </div>
-        <div class="manual-btns">
-          <button class="btn-manual btn-reveal" id="btn-manual-reveal" onclick="teacherReveal()">公佈答案</button>
-          <button class="btn-manual btn-next"   id="btn-manual-next"   onclick="teacherNext()" disabled>下一題</button>
-        </div>
-        <div style="font-size:0.72rem;color:rgba(255,255,255,0.25);margin-top:12px" id="auto-advance-info"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ── 最終排名畫面 ──────────────────────────────────── -->
-<div id="screen-final" class="screen">
-  <div class="final-wrap">
-    <div class="final-header">
-      <h2>🏆 最終排名與統計</h2>
-    </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('rank')">排行榜</button>
-      <button class="tab-btn"        onclick="switchTab('stats')">各題統計</button>
-    </div>
-
-    <!-- 排行榜 -->
-    <div class="tab-panel active" id="tab-rank">
-      <div style="overflow-x:auto">
-        <table class="rank-table">
-          <thead>
-            <tr>
-              <th class="ctr" style="width:52px">名次</th>
-              <th>姓名</th>
-              <th class="ctr">答對題數</th>
-              <th>正確率</th>
-              <th class="ctr">總反應時間</th>
-            </tr>
-          </thead>
-          <tbody id="rank-tbody"></tbody>
-        </table>
-      </div>
-      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn-clear" onclick="teacherClear()">清除重置（新一輪）</button>
-      </div>
-    </div>
-
-    <!-- 各題統計 -->
-    <div class="tab-panel" id="tab-stats">
-      <div class="qstat-grid" id="qstat-grid"></div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ── Toast ─────────────────────────────────────────── -->
-<div class="toast" id="toast"></div>
-
-<!-- ── GAS Modal ─────────────────────────────────────── -->
-<div id="gas-modal">
-  <div class="gas-modal-box">
-    <h3>雲端連線設定（教師端）</h3>
-    <p>貼上 Google Apps Script 部署後的 Web App URL。<br>儲存後此瀏覽器會記住，不需再次輸入。</p>
-    <input type="url" id="gas-url-inp" placeholder="https://script.google.com/macros/s/.../exec">
-    <div class="gas-modal-btns">
-      <button class="gas-cancel" onclick="closeGasModal()">取消</button>
-      <button class="gas-save"   onclick="saveGasUrl()">儲存並重新連線</button>
+<!-- ── GAS 設定 Modal ────────────────────────────────────── -->
+<div class="modal-bg" id="gas-modal">
+  <div class="modal">
+    <h3>GAS 雲端設定</h3>
+    <input id="gas-url-inp" type="text" placeholder="貼上 GAS Web App URL">
+    <div class="modal-btns">
+      <button class="btn-msave"   onclick="saveGasUrl()">儲存並重新連線</button>
+      <button class="btn-mcancel" onclick="closeGasModal()">取消</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── GAS URL（已固定，無需再設定）────────────────────────────────
-const GAS_URL = localStorage.getItem('fruit_game_gas_url')
-  || 'https://script.google.com/macros/s/AKfycbw9m9Vfr8F3KOozaHTC7u3Zao_lHlYUveyfq8CoH3asJ2erCs7ChWiGhXYu5ztoeZk/exec';
+// ── GAS URL ────────────────────────────────────────────────────
+const HARDCODED_GAS = 'https://script.google.com/macros/s/AKfycbw9m9Vfr8F3KOozaHTC7u3Zao_lHlYUveyfq8CoH3asJ2erCs7ChWiGhXYu5ztoeZk/exec';
+let GAS_URL = localStorage.getItem('fruit_gas_url') || HARDCODED_GAS;
 
-const Q_TIME_MS      = 8000;  // 每題作答時間（毫秒，與學生端一致）
-const REVEAL_TIME_MS = 3000;  // 公佈答案停留時間（毫秒）
-
-// ── 狀態 ─────────────────────────────────────────────────────────
-let pollTimer       = null;
-let advanceTimer    = null;  // 自動推進計時器
-let localCntTimer   = null;  // 畫面倒數 interval
-let lastPhase       = '';
-let lastQNum        = 0;
-let currentTotal    = 20;
-let autoAdvancing   = false;
-
-// ── 工具 ─────────────────────────────────────────────────────────
-function isOffline() { return !GAS_URL; }
-
-async function gasGet(params) {
-  const url = GAS_URL + '?' + new URLSearchParams(params);
-  const r = await fetch(url);
-  return r.json();
-}
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function toast(msg, ms = 2500) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), ms);
+function gasGet(params) {
+  return fetch(GAS_URL + '?' + new URLSearchParams(params)).then(r => r.json());
 }
 
 function now() {
-  return new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  return new Date().toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ── GAS URL ───────────────────────────────────────────────────────
-function updateDot() {
-  const dot = document.getElementById('gas-dot');
-  if (dot) dot.className = 'dot' + (GAS_URL ? ' ok' : '');
+// ── 輪詢 ──────────────────────────────────────────────────────
+let pollTimer = null;
+
+function startPoll() {
+  stopPoll();
+  fetchNow();
+  pollTimer = setInterval(fetchNow, 3000);
+}
+function stopPoll() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
+async function fetchNow() {
+  if (!GAS_URL) return;
+  try {
+    const d = await gasGet({ action: 'getResults' });
+    render(d);
+    document.getElementById('last-upd').textContent = `更新：${now()}`;
+  } catch(e) {
+    document.getElementById('last-upd').textContent = `連線失敗（${now()}）`;
+  }
+}
+
+// ── 渲染 ──────────────────────────────────────────────────────
+function render(d) {
+  const results = d.results || [];
+  const qStats  = d.qStats  || [];
+  const count   = d.count   || 0;
+  const status  = d.status  || 'waiting';
+  const total   = 20;
+
+  // 狀態卡
+  document.getElementById('sv-count').textContent = count;
+
+  const avgCorr = count > 0
+    ? (results.reduce((s, r) => s + r.correct, 0) / count).toFixed(1)
+    : '—';
+  document.getElementById('sv-avg').textContent = avgCorr;
+
+  const statusEl = document.getElementById('sv-status');
+  statusEl.textContent = status === 'announced' ? '已公告' : '等待中';
+
+  const badge = document.getElementById('status-badge');
+  badge.textContent = status === 'announced' ? '已公告成績' : '等待中';
+  badge.className   = 'status-badge ' + (status === 'announced' ? 'badge-announced' : 'badge-waiting');
+
+  // 公告按鈕
+  document.getElementById('btn-announce').disabled = status === 'announced';
+
+  // 排行榜
+  const tbody = results.map((r, i) => {
+    const rank = i + 1;
+    const pct  = Math.round(r.correct / total * 100);
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    return `<tr>
+      <td class="rank-num">${medal}</td>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td><strong>${r.correct}</strong> / ${total}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:0.78rem;color:rgba(255,255,255,0.45);white-space:nowrap">${pct}%</span>
+        </div>
+      </td>
+      <td style="color:rgba(255,255,255,0.5)">${(r.totalMs/1000).toFixed(1)} 秒</td>
+      <td style="color:rgba(255,255,255,0.35);font-size:0.8rem">${esc(r.time || '')}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rank-tbody').innerHTML = tbody ||
+    '<tr><td colspan="6" class="empty">尚無資料，等待學生提交…</td></tr>';
+
+  // 各題統計
+  const qGrid = qStats.map(q => {
+    const rate     = q.total > 0 ? Math.round(q.correct / q.total * 100) : 0;
+    const wrongPct = q.total > 0 ? Math.round(q.wrong   / q.total * 100) : 0;
+    return `<div class="qstat-card">
+      <img src="${esc(q.src)}" loading="lazy" alt="">
+      <div class="qstat-info">
+        <div class="qstat-ans">正確答案：${esc(q.correctAns || '')}</div>
+        <div class="qstat-bar-row"><span>✓ 答對 ${q.correct}人</span><span>${rate}%</span></div>
+        <div class="qbar"><div class="qbar-fill" style="width:${rate}%"></div></div>
+        <div class="qstat-bar-row"><span>✗ 答錯 ${q.wrong}人</span><span>${wrongPct}%</span></div>
+        <div class="qbar"><div class="qbar-fill wrong" style="width:${wrongPct}%"></div></div>
+        <div class="qstat-rate">答對率 ${rate}%</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty" style="grid-column:1/-1">尚無資料</div>';
+  document.getElementById('qstat-grid').innerHTML = qGrid;
+}
+
+// ── 公告成績 ──────────────────────────────────────────────────
+async function doAnnounce() {
+  if (!confirm('確定要公告成績嗎？學生將立刻看到名次和錯誤題目。')) return;
+  try {
+    await gasGet({ action: 'announce' });
+    fetchNow();
+  } catch(e) { alert('公告失敗，請再試'); }
+}
+
+// ── 新一輪 ────────────────────────────────────────────────────
+async function doClear() {
+  if (!confirm('確定要清除所有資料並開始新一輪嗎？')) return;
+  try {
+    await gasGet({ action: 'clear' });
+    fetchNow();
+  } catch(e) { alert('清除失敗，請再試'); }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ── GAS 設定 ──────────────────────────────────────────────────
 function openGasModal() {
   document.getElementById('gas-url-inp').value = GAS_URL;
   document.getElementById('gas-modal').classList.add('open');
@@ -526,353 +372,20 @@ function closeGasModal() {
 }
 function saveGasUrl() {
   const v = document.getElementById('gas-url-inp').value.trim();
-  GAS_URL = v;
-  v ? localStorage.setItem('fruit_game_gas_url', v) : localStorage.removeItem('fruit_game_gas_url');
-  closeGasModal(); updateDot();
-  if (!isOffline()) { stopPolling(); startPolling(); }
+  GAS_URL = v || HARDCODED_GAS;
+  localStorage.setItem('fruit_gas_url', GAS_URL);
+  closeGasModal();
+  document.getElementById('gas-dot').className = 'dot ok';
+  startPoll();
 }
 document.getElementById('gas-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('gas-modal')) closeGasModal();
 });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGasModal(); });
 
-// ── 輪詢 ─────────────────────────────────────────────────────────
-function startPolling() {
-  stopPolling();
-  fetchState();
-  pollTimer = setInterval(fetchState, 1500);
-}
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-}
-
-async function fetchState() {
-  if (isOffline()) {
-    document.getElementById('last-update').textContent = '請點右上角設定 GAS URL';
-    return;
-  }
-  try {
-    const d = await gasGet({action: 'state'});
-    handleState(d);
-    document.getElementById('last-update').textContent = `更新：${now()}`;
-  } catch(e) {
-    document.getElementById('last-update').textContent = `連線失敗（${now()}）`;
-  }
-}
-
-// ── 狀態處理 ──────────────────────────────────────────────────────
-function handleState(d) {
-  if (!d || d.error) return;
-  currentTotal = d.total || 20;
-
-  updateStatusBadge(d.phase);
-
-  if (d.phase === 'lobby') {
-    renderLobby(d);
-    if (lastPhase !== 'lobby') showScreen('screen-lobby');
-    lastPhase = 'lobby';
-    return;
-  }
-
-  if (d.phase === 'question') {
-    if (lastPhase !== 'question' || lastQNum !== d.qNum) {
-      lastPhase = 'question';
-      lastQNum  = d.qNum;
-      enterQuestion(d);
-    } else {
-      // 只更新作答人數
-      updateAnsweredDisplay(d.answeredCount || 0, d.playerCount || 0);
-    }
-    return;
-  }
-
-  if (d.phase === 'reveal') {
-    if (lastPhase !== 'reveal' || lastQNum !== d.qNum) {
-      lastPhase = 'reveal';
-      lastQNum  = d.qNum;
-      enterReveal(d);
-    }
-    return;
-  }
-
-  if (d.phase === 'finished') {
-    lastPhase = 'finished';
-    stopPolling();
-    enterFinal(d);
-    return;
-  }
-}
-
-// ── 大廳 ─────────────────────────────────────────────────────────
-function renderLobby(d) {
-  const players = d.players || [];
-  document.getElementById('lobby-count').textContent = players.length;
-  document.getElementById('btn-start').disabled = players.length === 0;
-
-  document.getElementById('grid-title').textContent =
-    players.length > 0 ? `${players.length} 位學生已加入` : '等待學生加入…';
-
-  const grid = document.getElementById('player-grid');
-  if (players.length === 0) {
-    grid.innerHTML = '<div class="empty-lobby">尚無學生加入</div>';
-  } else {
-    grid.innerHTML = players
-      .map(p => `<span class="player-chip">${esc(p.name)} <small style="opacity:.5">${esc(p.seat)}號</small></span>`)
-      .join('');
-  }
-}
-
-// ── 更新狀態 badge ────────────────────────────────────────────────
-function updateStatusBadge(phase) {
-  const badge = document.getElementById('status-badge');
-  const map = {
-    lobby:    ['等待加入',   'badge-lobby'],
-    question: ['作答進行中', 'badge-question'],
-    reveal:   ['公佈答案中', 'badge-reveal'],
-    finished: ['遊戲結束',   'badge-finished'],
-  };
-  const [text, cls] = map[phase] || ['—', 'badge-lobby'];
-  badge.textContent = text;
-  badge.className   = 'status-badge ' + cls;
-}
-
-// ── 進入題目 ─────────────────────────────────────────────────────
-function enterQuestion(d) {
-  showScreen('screen-game');
-  clearAdvanceTimer();
-  stopLocalCountdown();
-
-  document.getElementById('g-qnum').textContent = `${d.qNum} / ${currentTotal}`;
-  document.getElementById('g-img').src = d.imageSrc || '';
-  document.getElementById('btn-manual-reveal').disabled = false;
-  document.getElementById('btn-manual-next').disabled   = true;
-
-  // 隱藏公佈答案區
-  document.getElementById('reveal-answer-row').style.display = 'none';
-  document.getElementById('reveal-stats').style.display      = 'none';
-
-  updateAnsweredDisplay(d.answeredCount || 0, d.playerCount || 0);
-
-  // 計算剩餘時間
-  const elapsed    = (d.serverTime - d.qStart);
-  const remaining  = Math.max(0, Q_TIME_MS - elapsed);
-  startLocalCountdown(remaining, () => { /* 倒數結束 – 等老師或自動 */ });
-
-  // 自動推進到公佈答案
-  scheduleAdvance(remaining, callReveal);
-  document.getElementById('auto-advance-info').textContent = '倒數結束後自動公佈答案';
-}
-
-// ── 進入公佈答案 ──────────────────────────────────────────────────
-function enterReveal(d) {
-  stopLocalCountdown();
-  clearAdvanceTimer();
-
-  document.getElementById('g-countdown').textContent = '—';
-  document.getElementById('g-countdown').className   = 'ic-val big-countdown';
-
-  document.getElementById('btn-manual-reveal').disabled = true;
-  document.getElementById('btn-manual-next').disabled   = false;
-
-  // 顯示正確答案
-  const correct = d.correctAnswer || '';
-  document.getElementById('reveal-answer-row').style.display = '';
-  document.getElementById('reveal-answer-val').textContent   = correct;
-
-  // 統計
-  const stats = d.stats || {橘子:0, 柳丁:0};
-  const total = Math.max(1, stats['橘子'] + stats['柳丁']);
-  document.getElementById('stat-t-count').textContent = `${stats['橘子']} 人`;
-  document.getElementById('stat-o-count').textContent = `${stats['柳丁']} 人`;
-  document.getElementById('stat-t-fill').style.width  = `${Math.round(stats['橘子']/total*100)}%`;
-  document.getElementById('stat-o-fill').style.width  = `${Math.round(stats['柳丁']/total*100)}%`;
-
-  // 標示正確答案
-  const tBadge = document.getElementById('t-correct-badge');
-  const oBadge = document.getElementById('o-correct-badge');
-  tBadge.style.display = correct === '橘子' ? 'inline' : 'none';
-  oBadge.style.display = correct === '柳丁'  ? 'inline' : 'none';
-  document.getElementById('reveal-stats').style.display = '';
-
-  updateAnsweredDisplay(d.answeredCount || 0, d.playerCount || 0);
-
-  // 自動下一題
-  const isLast = d.qNum >= currentTotal;
-  document.getElementById('auto-advance-info').textContent =
-    isLast ? '即將顯示最終排名…' : `${REVEAL_TIME_MS/1000} 秒後自動進入下一題`;
-  scheduleAdvance(REVEAL_TIME_MS, callNext);
-}
-
-// ── 作答進度顯示 ─────────────────────────────────────────────────
-function updateAnsweredDisplay(answered, total) {
-  document.getElementById('ans-count-big').textContent    = answered;
-  document.getElementById('ans-count-label').textContent  = `/ ${total} 人已作答`;
-  document.getElementById('g-answered').textContent       = answered;
-  const pct = total > 0 ? Math.round(answered / total * 100) : 0;
-  document.getElementById('ans-progress').style.width = `${pct}%`;
-}
-
-// ── 本地倒數 ─────────────────────────────────────────────────────
-function startLocalCountdown(remainingMs, onEnd) {
-  stopLocalCountdown();
-  let secs = Math.ceil(remainingMs / 1000);
-  setCountdownDisplay(secs);
-
-  localCntTimer = setInterval(() => {
-    secs--;
-    if (secs < 0) secs = 0;
-    setCountdownDisplay(secs);
-    if (secs <= 0) { stopLocalCountdown(); if (onEnd) onEnd(); }
-  }, 1000);
-}
-
-function stopLocalCountdown() {
-  if (localCntTimer) { clearInterval(localCntTimer); localCntTimer = null; }
-}
-
-function setCountdownDisplay(secs) {
-  const el = document.getElementById('g-countdown');
-  el.textContent = secs;
-  el.className   = 'ic-val big-countdown' + (secs <= 2 ? ' urgent' : '');
-}
-
-// ── 自動推進 ─────────────────────────────────────────────────────
-function scheduleAdvance(ms, fn) {
-  clearAdvanceTimer();
-  autoAdvancing = true;
-  advanceTimer  = setTimeout(fn, ms);
-}
-
-function clearAdvanceTimer() {
-  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
-  autoAdvancing = false;
-}
-
-// ── 老師操作 ─────────────────────────────────────────────────────
-async function teacherStart() {
-  if (!confirm('確定要開始遊戲嗎？')) return;
-  if (isOffline()) { toast('請先設定 GAS URL'); return; }
-  try {
-    await gasGet({action: 'start'});
-    toast('遊戲已開始！');
-    lastPhase = ''; lastQNum = 0;
-    fetchState();
-  } catch(e) { toast('開始失敗，請再試'); }
-}
-
-async function callReveal() {
-  if (isOffline()) return;
-  try {
-    await gasGet({action: 'reveal'});
-    lastPhase = ''; lastQNum = 0; // force re-render
-    fetchState();
-  } catch(e) { toast('連線錯誤，請手動點「公佈答案」'); }
-}
-
-function teacherReveal() {
-  clearAdvanceTimer();
-  stopLocalCountdown();
-  callReveal();
-}
-
-async function callNext() {
-  if (isOffline()) return;
-  try {
-    const r = await gasGet({action: 'next'});
-    lastPhase = ''; lastQNum = 0;
-    if (r.finished) { stopPolling(); fetchState(); }
-    else { fetchState(); }
-  } catch(e) { toast('連線錯誤，請手動點「下一題」'); }
-}
-
-function teacherNext() {
-  clearAdvanceTimer();
-  callNext();
-}
-
-async function teacherClear() {
-  if (!confirm('確定要清除所有資料並重新開始嗎？')) return;
-  if (isOffline()) { toast('請先設定 GAS URL'); return; }
-  try {
-    clearAdvanceTimer(); stopLocalCountdown(); stopPolling();
-    await gasGet({action: 'clear'});
-    lastPhase = ''; lastQNum = 0;
-    toast('已清除，可以開始新一輪');
-    showScreen('screen-lobby');
-    startPolling();
-  } catch(e) { toast('清除失敗，請再試'); }
-}
-
-// ── 最終畫面 ─────────────────────────────────────────────────────
-function enterFinal(d) {
-  clearAdvanceTimer(); stopLocalCountdown();
-  showScreen('screen-final');
-
-  const results = d.results || [];
-  const qStats  = d.qStats  || [];
-
-  // 排行榜
-  const tbody = results.map((r, i) => {
-    const rank  = i + 1;
-    const pct   = Math.round(r.correct / currentTotal * 100);
-    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-    return `
-    <tr>
-      <td class="ctr" style="font-weight:900;font-size:1.1rem">${medal}</td>
-      <td><strong>${esc(r.name)}</strong></td>
-      <td class="ctr"><strong>${r.correct}</strong> / ${currentTotal}</td>
-      <td>
-        <div class="score-bar-wrap">
-          <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
-          <span style="font-size:0.8rem;color:rgba(255,255,255,0.5);white-space:nowrap">${pct}%</span>
-        </div>
-      </td>
-      <td class="ctr" style="font-size:0.85rem;color:rgba(255,255,255,0.5)">${(r.totalMs/1000).toFixed(1)} 秒</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('rank-tbody').innerHTML = tbody ||
-    '<tr><td colspan="5" style="text-align:center;padding:24px;color:rgba(255,255,255,0.25)">尚無資料</td></tr>';
-
-  // 各題統計
-  const qGrid = qStats.map(q => {
-    const rate = q.total > 0 ? Math.round(q.correct / q.total * 100) : 0;
-    const wrongPct = q.total > 0 ? Math.round(q.wrong / q.total * 100) : 0;
-    return `
-    <div class="qstat-card">
-      <img src="${esc(q.imageSrc)}" alt="Q${q.qNum}" loading="lazy">
-      <div class="qstat-info">
-        <div class="qstat-num">第 ${q.qNum} 題</div>
-        <div class="qstat-ans">正確答案：${esc(q.answer)}</div>
-        <div class="qstat-bar-label"><span>✓ 答對 ${q.correct} 人</span><span>${rate}%</span></div>
-        <div class="qstat-bar"><div class="qstat-bar-fill" style="width:${rate}%"></div></div>
-        <div class="qstat-bar-label"><span>✗ 答錯 ${q.wrong} 人</span><span>${wrongPct}%</span></div>
-        <div class="qstat-bar"><div class="qstat-bar-fill wrong" style="width:${wrongPct}%"></div></div>
-        <div class="qstat-correct-rate">答對率 ${rate}%</div>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('qstat-grid').innerHTML = qGrid;
-}
-
-// ── Tabs ─────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
-}
-
-// ── 初始化 ────────────────────────────────────────────────────────
-updateDot();
-
-if (!isOffline()) {
-  startPolling();
-} else {
-  document.getElementById('last-update').textContent = '請點右上角設定 GAS URL';
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeGasModal();
-});
+// ── 初始化 ────────────────────────────────────────────────────
+document.getElementById('gas-dot').className = 'dot' + (GAS_URL ? ' ok' : '');
+if (GAS_URL) startPoll();
 </script>
 </body>
 </html>
