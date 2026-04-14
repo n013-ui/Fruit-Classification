@@ -280,8 +280,7 @@ body {
 <div id="waiting" class="screen">
   <div class="wait-emoji">⏳</div>
   <div class="wait-title">等待老師公告成績</div>
-  <div class="wait-score">你答對了 <strong id="wait-correct">—</strong> / 20 題</div>
-  <div class="wait-sub">老師公告後，你就能看到<br>自己的名次和錯誤題目</div>
+  <div class="wait-sub">全部 20 題作答完成！<br>老師公告後，才能看到名次和答錯的題目</div>
   <div class="spinner"></div>
   <div class="wait-count" id="wait-count"></div>
 </div>
@@ -516,7 +515,6 @@ async function finishGame() {
   const correct  = myAnswers.filter(a => a.isCorrect).length;
   const totalMs  = myAnswers.reduce((s, a) => s + a.ms, 0);
 
-  document.getElementById('wait-correct').textContent = correct;
   showScreen('waiting');
 
   // 送出成績

@@ -262,6 +262,12 @@ async function fetchNow() {
   if (!GAS_URL) return;
   try {
     const d = await gasGet({ action: 'getResults' });
+    // GAS 回傳錯誤（舊版 Code.gs 尚未部署新版時會出現）
+    if (d.error) {
+      document.getElementById('last-upd').textContent =
+        `⚠ GAS 回傳錯誤：${d.error}（請確認已部署新版 Code.gs）`;
+      return;
+    }
     render(d);
     document.getElementById('last-upd').textContent = `更新：${now()}`;
   } catch(e) {
@@ -273,7 +279,7 @@ async function fetchNow() {
 function render(d) {
   const results = d.results || [];
   const qStats  = d.qStats  || [];
-  const count   = d.count   || 0;
+  const count   = Number(d.count) || 0;
   const status  = d.status  || 'waiting';
   const total   = 20;
 
