@@ -427,8 +427,6 @@ body {
           <thead>
             <tr>
               <th class="ctr" style="width:52px">名次</th>
-              <th>班級</th>
-              <th class="ctr">座號</th>
               <th>姓名</th>
               <th class="ctr">答對題數</th>
               <th>正確率</th>
@@ -468,10 +466,11 @@ body {
 </div>
 
 <script>
-// ── 設定 ─────────────────────────────────────────────────────────
-let GAS_URL = localStorage.getItem('fruit_game_gas_url') || '';
+// ── GAS URL（已固定，無需再設定）────────────────────────────────
+const GAS_URL = localStorage.getItem('fruit_game_gas_url')
+  || 'https://script.google.com/macros/s/AKfycbw9m9Vfr8F3KOozaHTC7u3Zao_lHlYUveyfq8CoH3asJ2erCs7ChWiGhXYu5ztoeZk/exec';
 
-const Q_TIME_MS     = 5000;   // 每題作答時間（毫秒）
+const Q_TIME_MS      = 8000;  // 每題作答時間（毫秒，與學生端一致）
 const REVEAL_TIME_MS = 3000;  // 公佈答案停留時間（毫秒）
 
 // ── 狀態 ─────────────────────────────────────────────────────────
@@ -813,14 +812,12 @@ function enterFinal(d) {
 
   // 排行榜
   const tbody = results.map((r, i) => {
-    const rank   = i + 1;
-    const pct    = Math.round(r.correct / currentTotal * 100);
-    const medal  = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const rank  = i + 1;
+    const pct   = Math.round(r.correct / currentTotal * 100);
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
     return `
     <tr>
       <td class="ctr" style="font-weight:900;font-size:1.1rem">${medal}</td>
-      <td>${esc(r.class)}</td>
-      <td class="ctr">${esc(r.seat)}</td>
       <td><strong>${esc(r.name)}</strong></td>
       <td class="ctr"><strong>${r.correct}</strong> / ${currentTotal}</td>
       <td>
@@ -833,7 +830,7 @@ function enterFinal(d) {
     </tr>`;
   }).join('');
   document.getElementById('rank-tbody').innerHTML = tbody ||
-    '<tr><td colspan="7" style="text-align:center;padding:24px;color:rgba(255,255,255,0.25)">尚無資料</td></tr>';
+    '<tr><td colspan="5" style="text-align:center;padding:24px;color:rgba(255,255,255,0.25)">尚無資料</td></tr>';
 
   // 各題統計
   const qGrid = qStats.map(q => {
