@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>水果分類大挑戰</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Microsoft JhengHei', 'PingFang TC', 'Apple LiGothic Medium', sans-serif;
+  background: #1a1a2e;
+  color: #fff;
+  height: 100dvh;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── SCREENS ───────────────────────────────────── */
+.screen { display: none; flex-direction: column; width: 100%; height: 100dvh; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ─────────────────────────────────────── */
+#login {
+  align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.login-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 22px;
+  padding: 36px 32px 28px;
+  max-width: 360px; width: 92%;
+  backdrop-filter: blur(12px);
+}
+
+.logo { text-align: center; margin-bottom: 26px; }
+.logo-emoji { font-size: 2.8rem; line-height: 1; }
+.logo h1 { font-size: 1.45rem; font-weight: 900; color: #FFB347; letter-spacing: 3px; margin-top: 8px; }
+.logo p  { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 4px; letter-spacing: 1px; }
+
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 0.8rem; color: rgba(255,255,255,0.55); margin-bottom: 5px; }
+.field input {
+  width: 100%; padding: 12px 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  color: #fff; font-size: 1rem; font-family: inherit;
+  transition: border-color 0.2s;
+}
+.field input:focus { outline: none; border-color: #FFB347; background: rgba(255,179,71,0.07); }
+.field input::placeholder { color: rgba(255,255,255,0.22); }
+
+.btn-join {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #e67e22, #f39c12);
+  border: none; border-radius: 12px;
+  color: #fff; font-size: 1.1rem; font-weight: 900;
+  font-family: inherit; letter-spacing: 3px;
+  cursor: pointer; margin-top: 4px;
+  transition: transform 0.12s, box-shadow 0.2s;
+}
+.btn-join:hover  { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(243,156,18,0.45); }
+.btn-join:active { transform: scale(0.97); }
+.btn-join:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.err { color: #e74c3c; font-size: 0.8rem; text-align: center; margin-top: 8px; min-height: 18px; }
+
+.gas-btn-wrap { text-align: center; margin-top: 14px; }
+.gas-btn {
+  background: none; border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px; color: rgba(255,255,255,0.38);
+  font-size: 0.76rem; font-family: inherit;
+  padding: 5px 13px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.gas-btn:hover { border-color: rgba(255,255,255,0.45); color: rgba(255,255,255,0.65); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #e74c3c; flex-shrink: 0; }
+.dot.ok { background: #2ecc71; }
+
+/* ── LOBBY ─────────────────────────────────────── */
+#lobby {
+  align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #1a1a2e, #16213e);
+}
+
+.lobby-inner { text-align: center; width: 90%; max-width: 500px; }
+.lobby-title { font-size: 1.3rem; font-weight: 900; color: #FFB347; margin-bottom: 6px; letter-spacing: 2px; }
+.lobby-name  { font-size: 0.85rem; color: rgba(255,255,255,0.45); margin-bottom: 26px; }
+
+.spinner {
+  width: 54px; height: 54px;
+  border: 5px solid rgba(255,179,71,0.18);
+  border-top-color: #FFB347;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.lobby-wait { font-size: 0.95rem; color: rgba(255,255,255,0.5); margin-bottom: 24px; }
+
+.player-count-box {
+  background: rgba(255,179,71,0.08);
+  border: 1px solid rgba(255,179,71,0.25);
+  border-radius: 14px; padding: 14px 20px; margin-bottom: 18px;
+}
+.pcount-num   { font-size: 2.6rem; font-weight: 900; color: #FFB347; line-height: 1; }
+.pcount-label { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 3px; }
+
+.chip-list { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; max-height: 180px; overflow-y: auto; }
+.chip {
+  background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.25);
+  border-radius: 20px; padding: 4px 13px;
+  font-size: 0.82rem; color: #FFB347;
+}
+.chip.me { background: rgba(255,179,71,0.22); border-color: #FFB347; font-weight: bold; }
+
+/* ── QUESTION ──────────────────────────────────── */
+#question { background: #0d0d1a; position: relative; }
+
+.q-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: rgba(0,0,0,0.55);
+  flex-shrink: 0; z-index: 5; gap: 8px;
+}
+.q-progress { font-size: 0.82rem; font-weight: bold; color: rgba(255,255,255,0.8); white-space: nowrap; }
+.q-name { font-size: 0.75rem; color: rgba(255,255,255,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
+
+.q-img-wrap {
+  flex: 1 1 0; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative; background: #111;
+}
+.q-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+
+/* Countdown strip */
+.q-timer-strip {
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 0;
+}
+.q-countdown {
+  font-size: 4.8rem; font-weight: 900; line-height: 1;
+  color: #fff; letter-spacing: -2px;
+  transition: color 0.3s;
+  text-shadow: 0 0 24px rgba(255,255,255,0.3);
+}
+.q-countdown.urgent { color: #e74c3c; animation: cnt-pulse 0.45s ease-in-out infinite alternate; }
+@keyframes cnt-pulse { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+/* Answer buttons */
+.q-btns { display: flex; gap: 10px; padding: 10px; flex-shrink: 0; }
+.q-btn {
+  flex: 1; border: none; border-radius: 16px;
+  font-size: 1.45rem; font-weight: 900;
+  font-family: inherit; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 80px;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
+  letter-spacing: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-btn:active:not(:disabled) { transform: scale(0.94); }
+.q-btn:disabled { cursor: not-allowed; }
+
+.btn-tangerine { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff; }
+.btn-orange    { background: linear-gradient(135deg, #d68910, #f0b429); color: #fff; }
+
+.q-btn.selected     { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(255,255,255,0.5); }
+.q-btn.not-selected { opacity: 0.35; }
+.q-btn.reveal-correct { background: linear-gradient(135deg, #1a7a40, #27ae60) !important; opacity: 1 !important; transform: none; box-shadow: 0 0 20px rgba(39,174,96,0.5); }
+.q-btn.reveal-wrong   { background: linear-gradient(135deg, #6d1f1f, #c0392b) !important; opacity: 0.5 !important; transform: none; }
+
+/* Reveal overlay */
+.reveal-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.78);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50; opacity: 0; pointer-events: none;
+  transition: opacity 0.35s;
+}
+.reveal-overlay.show { opacity: 1; pointer-events: auto; }
+
+.reveal-card {
+  background: rgba(18,18,36,0.97);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 20px; padding: 28px 36px;
+  text-align: center; min-width: 230px;
+}
+.reveal-icon  { font-size: 4.5rem; line-height: 1; margin-bottom: 10px; }
+.reveal-label { font-size: 1.3rem; font-weight: 900; margin-bottom: 6px; }
+.reveal-correct-lbl { color: #2ecc71; }
+.reveal-wrong-lbl   { color: #e74c3c; }
+.reveal-sub { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+
+/* ── FINAL ─────────────────────────────────────── */
+#final {
+  background: linear-gradient(160deg, #1a1a2e, #0d1b3e);
+  overflow-y: auto; align-items: stretch;
+}
+
+.final-header { text-align: center; padding: 24px 20px 14px; flex-shrink: 0; }
+.final-header h2 { font-size: 1.7rem; font-weight: 900; color: #FFD700; letter-spacing: 3px; }
+.final-header p  { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+.my-card {
+  background: rgba(255,215,0,0.08);
+  border: 1.5px solid rgba(255,215,0,0.28);
+  border-radius: 14px; margin: 0 14px 14px;
+  padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.my-card-left .lbl   { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.my-card-left .vname { font-size: 1rem; font-weight: bold; margin-top: 2px; }
+.my-card-right .vscore { font-size: 2rem; font-weight: 900; color: #FFD700; line-height: 1; text-align: right; }
+.my-card-right .vtime  { font-size: 0.72rem; color: rgba(255,255,255,0.35); text-align: right; }
+
+.rank-list { padding: 0 10px 24px; }
+.rank-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 12px; margin-bottom: 5px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.rank-row.is-me   { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.35); }
+.rank-row.gold    { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.4); }
+.rank-row.silver  { background: rgba(192,192,192,0.08); }
+.rank-row.bronze  { background: rgba(205,127,50,0.1); }
+
+.rk-num { font-size: 1rem; font-weight: 900; min-width: 28px; text-align: center; }
+.rk-gold   { color: #FFD700; }
+.rk-silver { color: #C0C0C0; }
+.rk-bronze { color: #CD7F32; }
+
+.rk-info  { flex: 1; }
+.rk-name  { font-size: 0.92rem; font-weight: bold; }
+.rk-sub   { font-size: 0.72rem; color: rgba(255,255,255,0.38); margin-top: 1px; }
+
+.rk-score     { font-size: 0.95rem; font-weight: bold; color: #FFD700; text-align: right; }
+.rk-score-sub { font-size: 0.7rem; color: rgba(255,255,255,0.35); text-align: right; margin-top: 1px; }
+
+/* ── GAS MODAL ─────────────────────────────────── */
+#gas-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72); z-index: 999;
+  align-items: center; justify-content: center;
+}
+#gas-modal.open { display: flex; }
+.gas-modal-box {
+  background: #16213e; border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 18px; padding: 26px 24px;
+  max-width: 400px; width: 92%;
+}
+.gas-modal-box h3 { font-size: 0.95rem; color: #FFB347; margin-bottom: 5px; }
+.gas-modal-box p  { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 14px; line-height: 1.6; }
+.gas-modal-box input {
+  width: 100%; padding: 10px 12px;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 8px; color: #fff;
+  font-family: monospace; font-size: 0.8rem;
+  margin-bottom: 12px;
+}
+.gas-modal-box input:focus { outline: none; border-color: #FFB347; }
+.gas-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.gas-modal-btns button {
+  padding: 8px 18px; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 0.88rem; font-weight: bold; cursor: pointer;
+}
+.gas-save   { background: #e67e22; color: #fff; }
+.gas-cancel { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+
+/* ── RESPONSIVE ─────────────────────────────────── */
+@media (max-height: 600px) {
+  .q-countdown { font-size: 3.2rem; }
+  .q-btn { min-height: 60px; font-size: 1.2rem; }
+  .q-btns { padding: 7px; gap: 7px; }
+}
+@media (max-width: 380px) {
+  .q-countdown { font-size: 3.8rem; }
+  .q-btn { font-size: 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── 登入 ─────────────────────────────────────────── -->
+<div id="login" class="screen active">
+  <div class="login-card">
+    <div class="logo">
+      <div class="logo-emoji">🍊</div>
+      <h1>水果分類大挑戰</h1>
+      <p>橘子 vs 柳丁</p>
+    </div>
+    <div class="field">
+      <label>班級</label>
+      <input id="inp-class" type="text" placeholder="例如：三年一班" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>座號</label>
+      <input id="inp-seat" type="number" placeholder="例如：15" min="1" max="60">
+    </div>
+    <div class="field">
+      <label>姓名</label>
+      <input id="inp-name" type="text" placeholder="請輸入你的姓名" autocomplete="off">
+    </div>
+    <button class="btn-join" id="btn-join" onclick="doJoin()">加入遊戲</button>
+    <div class="err" id="join-err"></div>
+    <div class="gas-btn-wrap">
+      <button class="gas-btn" onclick="openGasModal()">
+        <span class="dot" id="gas-dot"></span>雲端設定
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 大廳 ─────────────────────────────────────────── -->
+<div id="lobby" class="screen">
+  <div class="lobby-inner">
+    <div class="lobby-title">等待老師開始…</div>
+    <div class="lobby-name" id="lobby-name"></div>
+    <div class="spinner"></div>
+    <div class="lobby-wait">遊戲即將開始，請準備好！</div>
+    <div class="player-count-box">
+      <div class="pcount-num" id="pcount">1</div>
+      <div class="pcount-label">位同學已加入</div>
+    </div>
+    <div class="chip-list" id="chip-list"></div>
+  </div>
+</div>
+
+<!-- ── 作答 ─────────────────────────────────────────── -->
+<div id="question" class="screen">
+  <div class="q-topbar">
+    <span class="q-progress" id="q-progress">第 1 題 / 20</span>
+    <span class="q-name" id="q-name-hdr"></span>
+  </div>
+  <div class="q-img-wrap">
+    <img id="q-img" src="" alt="水果圖片">
+  </div>
+  <div class="q-timer-strip">
+    <div class="q-countdown" id="q-countdown">5</div>
+  </div>
+  <div class="q-btns">
+    <button class="q-btn btn-tangerine" id="btn-tangerine" onclick="submitAnswer('橘子')">
+      🍊 橘子
+    </button>
+    <button class="q-btn btn-orange" id="btn-orange" onclick="submitAnswer('柳丁')">
+      🟡 柳丁
+    </button>
+  </div>
+
+  <!-- 公佈答案 Overlay -->
+  <div class="reveal-overlay" id="reveal-overlay">
+    <div class="reveal-card">
+      <div class="reveal-icon" id="reveal-icon">✓</div>
+      <div class="reveal-label" id="reveal-label">答對了！</div>
+      <div class="reveal-sub" id="reveal-sub"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 最終排名 ───────────────────────────────────────── -->
+<div id="final" class="screen">
+  <div class="final-header">
+    <h2>🏆 最終排名</h2>
+    <p id="final-sub">遊戲結束！以下是本次成績</p>
+  </div>
+  <div class="my-card" id="my-card">
+    <div class="my-card-left">
+      <div class="lbl">你的成績</div>
+      <div class="vname" id="my-name-final">—</div>
+    </div>
+    <div class="my-card-right">
+      <div class="vscore" id="my-score-final">0 / 20</div>
+      <div class="vtime" id="my-time-final"></div>
+    </div>
+  </div>
+  <div class="rank-list" id="rank-list"></div>
+</div>
+
+<!-- ── GAS 設定 Modal ─────────────────────────────────── -->
+<div id="gas-modal">
+  <div class="gas-modal-box">
+    <h3>雲端連線設定</h3>
+    <p>貼上 Google Apps Script 部署後的 Web App URL。<br>儲存後此瀏覽器會記住，不需再次輸入。</p>
+    <input type="url" id="gas-url-inp" placeholder="https://script.google.com/macros/s/.../exec">
+    <div class="gas-modal-btns">
+      <button class="gas-cancel" onclick="closeGasModal()">取消</button>
+      <button class="gas-save"   onclick="saveGasUrl()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 設定 ─────────────────────────────────────────────────────────
+let GAS_URL    = localStorage.getItem('fruit_game_gas_url') || '';
+const Q_TIME   = 5;   // 每題秒數（需與老師端一致）
+const REVEAL_TIME = 3; // 公佈答案秒數
+
+// ── 狀態 ─────────────────────────────────────────────────────────
+let playerKey   = '';
+let myName      = '';
+let myClass     = '';
+let mySeat      = '';
+let myCorrect   = 0;
+let myTotalMs   = 0;
+let myAnswer    = null; // 本題作答
+let answerSentAt = 0;   // 開始計時時間
+let lastPhase   = '';
+let lastQNum    = 0;
+let pollTimer   = null;
+let cntTimer    = null; // 倒數 interval
+
+// ── 工具 ─────────────────────────────────────────────────────────
+function isOffline() { return !GAS_URL; }
+
+async function gasGet(params) {
+  const url = GAS_URL + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── GAS URL 設定 ──────────────────────────────────────────────────
+function updateDot() {
+  const dot = document.getElementById('gas-dot');
+  if (dot) dot.className = 'dot' + (GAS_URL ? ' ok' : '');
+}
+
+function openGasModal() {
+  document.getElementById('gas-url-inp').value = GAS_URL;
+  document.getElementById('gas-modal').classList.add('open');
+}
+function closeGasModal() {
+  document.getElementById('gas-modal').classList.remove('open');
+}
+function saveGasUrl() {
+  const v = document.getElementById('gas-url-inp').value.trim();
+  GAS_URL = v;
+  v ? localStorage.setItem('fruit_game_gas_url', v) : localStorage.removeItem('fruit_game_gas_url');
+  closeGasModal();
+  updateDot();
+}
+document.getElementById('gas-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('gas-modal')) closeGasModal();
+});
+
+// ── 加入遊戲 ──────────────────────────────────────────────────────
+async function doJoin() {
+  const cls  = document.getElementById('inp-class').value.trim();
+  const seat = document.getElementById('inp-seat').value.trim();
+  const name = document.getElementById('inp-name').value.trim();
+  const errEl = document.getElementById('join-err');
+
+  if (!name) { errEl.textContent = '請填寫姓名'; return; }
+  errEl.textContent = '';
+
+  if (isOffline()) {
+    // 離線模式：直接進大廳等待
+    myClass = cls; mySeat = seat; myName = name;
+    playerKey = `${cls}_${seat}_${name}`;
+    enterLobby();
+    return;
+  }
+
+  document.getElementById('btn-join').disabled = true;
+  try {
+    const r = await gasGet({action:'join', class:cls, seat:seat, name});
+    if (r.error) {
+      if (r.error === 'game_started') { errEl.textContent = '遊戲已開始，無法加入'; }
+      else { errEl.textContent = r.error; }
+      return;
+    }
+    myClass = cls; mySeat = seat; myName = name;
+    playerKey = r.playerKey;
+    enterLobby();
+  } catch(e) {
+    errEl.textContent = '無法連線，請確認雲端設定';
+  } finally {
+    document.getElementById('btn-join').disabled = false;
+  }
+}
+
+function enterLobby() {
+  document.getElementById('lobby-name').textContent = `${myClass} ${mySeat}號 ${myName}`;
+  showScreen('lobby');
+  startPolling();
+}
+
+// ── 輪詢 ─────────────────────────────────────────────────────────
+function startPolling() {
+  stopPolling();
+  poll();
+  pollTimer = setInterval(poll, 1000);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+async function poll() {
+  if (isOffline()) return;
+  try {
+    const d = await gasGet({action:'state', playerKey});
+    handleState(d);
+  } catch(e) { /* 網路暫時錯誤，繼續等 */ }
+}
+
+// ── 狀態處理 ──────────────────────────────────────────────────────
+function handleState(d) {
+  if (!d || d.error) return;
+
+  // 大廳
+  if (d.phase === 'lobby') {
+    renderLobby(d);
+    return;
+  }
+
+  // 新題目
+  if (d.phase === 'question') {
+    if (lastPhase !== 'question' || lastQNum !== d.qNum) {
+      lastPhase = 'question';
+      lastQNum  = d.qNum;
+      enterQuestion(d);
+    }
+    return;
+  }
+
+  // 公佈答案
+  if (d.phase === 'reveal') {
+    if (lastPhase !== 'reveal' || lastQNum !== d.qNum) {
+      lastPhase = 'reveal';
+      lastQNum  = d.qNum;
+      enterReveal(d);
+    }
+    return;
+  }
+
+  // 結束
+  if (d.phase === 'finished') {
+    stopPolling();
+    enterFinal(d);
+    return;
+  }
+}
+
+// ── 大廳畫面 ──────────────────────────────────────────────────────
+function renderLobby(d) {
+  if (!document.getElementById('lobby').classList.contains('active')) return;
+  const list = d.players || [];
+  document.getElementById('pcount').textContent = list.length;
+  document.getElementById('chip-list').innerHTML = list
+    .map(p => `<span class="chip${p.name===myName && p.seat===mySeat ? ' me':''}">${esc(p.name)}</span>`)
+    .join('');
+}
+
+// ── 進入作答畫面 ──────────────────────────────────────────────────
+function enterQuestion(d) {
+  showScreen('question');
+  stopCountdown();
+  hideReveal();
+
+  // 更新圖片
+  document.getElementById('q-img').src = d.imageSrc || '';
+  document.getElementById('q-progress').textContent = `第 ${d.qNum} 題 / ${d.total}`;
+  document.getElementById('q-name-hdr').textContent = myName;
+
+  // 重設按鈕
+  const btnT = document.getElementById('btn-tangerine');
+  const btnO = document.getElementById('btn-orange');
+  [btnT, btnO].forEach(b => {
+    b.disabled = false;
+    b.className = b.id === 'btn-tangerine' ? 'q-btn btn-tangerine' : 'q-btn btn-orange';
+  });
+
+  myAnswer = null;
+
+  // 計算剩餘時間（與伺服器同步）
+  const elapsed = (d.serverTime - d.qStart) / 1000;
+  const remaining = Math.max(0, Q_TIME - elapsed);
+  answerSentAt = Date.now() - elapsed * 1000;  // 反推倒數起點
+
+  startCountdown(remaining);
+}
+
+// ── 倒數計時 ──────────────────────────────────────────────────────
+function startCountdown(remainingSeconds) {
+  stopCountdown();
+  let secs = Math.ceil(remainingSeconds);
+  updateCountdownDisplay(secs);
+
+  cntTimer = setInterval(() => {
+    secs--;
+    if (secs < 0) secs = 0;
+    updateCountdownDisplay(secs);
+    if (secs <= 0) {
+      stopCountdown();
+      disableButtons();
+    }
+  }, 1000);
+}
+
+function stopCountdown() {
+  if (cntTimer) { clearInterval(cntTimer); cntTimer = null; }
+}
+
+function updateCountdownDisplay(secs) {
+  const el = document.getElementById('q-countdown');
+  el.textContent = secs;
+  el.className   = secs <= 2 ? 'q-countdown urgent' : 'q-countdown';
+}
+
+function disableButtons() {
+  ['btn-tangerine','btn-orange'].forEach(id => {
+    document.getElementById(id).disabled = true;
+  });
+}
+
+// ── 學生提交答案 ──────────────────────────────────────────────────
+async function submitAnswer(ans) {
+  if (myAnswer) return; // 已作答
+  myAnswer = ans;
+
+  const responseMs = Date.now() - answerSentAt;
+  stopCountdown();
+  disableButtons();
+
+  // 視覺：選中的按鈕放大
+  const selectedId = ans === '橘子' ? 'btn-tangerine' : 'btn-orange';
+  const otherId    = ans === '橘子' ? 'btn-orange' : 'btn-tangerine';
+  document.getElementById(selectedId).classList.add('selected');
+  document.getElementById(otherId).classList.add('not-selected');
+
+  if (isOffline()) return;
+
+  try {
+    await gasGet({action:'answer', playerKey, qNum:lastQNum, ans, ms:responseMs});
+  } catch(e) { /* 靜默失敗 */ }
+}
+
+// ── 公佈答案 ─────────────────────────────────────────────────────
+function enterReveal(d) {
+  stopCountdown();
+  const correct = d.correctAnswer || '';
+  const mine    = d.myAnswer;
+
+  // 按鈕顏色：正確答案亮綠
+  const btnT = document.getElementById('btn-tangerine');
+  const btnO = document.getElementById('btn-orange');
+  btnT.disabled = true; btnO.disabled = true;
+
+  if (correct === '橘子') {
+    btnT.className = 'q-btn btn-tangerine reveal-correct';
+    btnO.className = 'q-btn btn-orange reveal-wrong';
+  } else {
+    btnT.className = 'q-btn btn-tangerine reveal-wrong';
+    btnO.className = 'q-btn btn-orange reveal-correct';
+  }
+
+  // Overlay
+  const overlay = document.getElementById('reveal-overlay');
+  const icon  = document.getElementById('reveal-icon');
+  const label = document.getElementById('reveal-label');
+  const sub   = document.getElementById('reveal-sub');
+
+  if (!mine) {
+    // 未作答
+    icon.textContent  = '⏰';
+    label.textContent = '未作答';
+    label.className   = 'reveal-label';
+    sub.textContent   = `正確答案是：${correct}`;
+  } else if (mine.correct) {
+    icon.textContent  = '✓';
+    label.textContent = '答對了！';
+    label.className   = 'reveal-label reveal-correct-lbl';
+    sub.textContent   = `反應時間 ${(mine.ms / 1000).toFixed(2)} 秒`;
+    myCorrect++;
+    myTotalMs += mine.ms;
+  } else {
+    icon.textContent  = '✗';
+    label.textContent = '答錯了！';
+    label.className   = 'reveal-label reveal-wrong-lbl';
+    sub.textContent   = `正確答案是：${correct}`;
+  }
+
+  overlay.classList.add('show');
+}
+
+function hideReveal() {
+  document.getElementById('reveal-overlay').classList.remove('show');
+}
+
+// ── 最終排名 ──────────────────────────────────────────────────────
+function enterFinal(d) {
+  stopCountdown();
+  hideReveal();
+  showScreen('final');
+
+  const results = d.results || [];
+
+  // 自己的成績
+  const me = results.find(r => r.name === myName && r.seat === mySeat);
+  if (me) {
+    document.getElementById('my-name-final').textContent =
+      `${me.class} ${me.seat}號 ${me.name}`;
+    document.getElementById('my-score-final').textContent =
+      `${me.correct} / ${d.total}`;
+    document.getElementById('my-time-final').textContent =
+      `總反應時間 ${(me.totalMs / 1000).toFixed(1)} 秒`;
+  }
+
+  // 排行榜
+  const html = results.map((r, i) => {
+    const rank  = i + 1;
+    const isMe  = r.name === myName && r.seat === mySeat;
+    const cls   = isMe ? 'rank-row is-me' :
+                  rank === 1 ? 'rank-row gold' :
+                  rank === 2 ? 'rank-row silver' :
+                  rank === 3 ? 'rank-row bronze' : 'rank-row';
+    const numCls = rank === 1 ? 'rk-num rk-gold' :
+                   rank === 2 ? 'rk-num rk-silver' :
+                   rank === 3 ? 'rk-num rk-bronze' : 'rk-num';
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    return `
+    <div class="${cls}">
+      <span class="${numCls}">${medal}</span>
+      <div class="rk-info">
+        <div class="rk-name">${esc(r.name)}${isMe ? ' ← 我' : ''}</div>
+        <div class="rk-sub">${esc(r.class)} ${esc(r.seat)}號</div>
+      </div>
+      <div>
+        <div class="rk-score">${r.correct} 題</div>
+        <div class="rk-score-sub">${(r.totalMs/1000).toFixed(1)} 秒</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rank-list').innerHTML = html;
+}
+
+// ── 初始化 ────────────────────────────────────────────────────────
+updateDot();
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeGasModal();
+  if (e.key === 'Enter' && document.getElementById('login').classList.contains('active')) doJoin();
+});
+</script>
+</body>
+</html>
