@@ -240,7 +240,7 @@ body {
     </div>
     <div class="field">
       <label>你的姓名</label>
-      <input id="inp-name" type="text" placeholder="請輸入姓名" autocomplete="off" autocorrect="off">
+      <input id="inp-name" type="text" placeholder="請輸入姓名（最多10字）" maxlength="10" autocomplete="off" autocorrect="off">
     </div>
     <button class="btn-join" id="btn-join" onclick="doJoin()">開始作答</button>
     <div class="err" id="join-err"></div>
@@ -380,6 +380,7 @@ function doJoin() {
   const name  = document.getElementById('inp-name').value.trim();
   const errEl = document.getElementById('join-err');
   if (!name) { errEl.textContent = '請填寫姓名'; return; }
+  if (name.length > 10) { errEl.textContent = '姓名最多 10 個字'; return; }
   errEl.textContent = '';
 
   let token = sessionStorage.getItem('fruit_token');
@@ -529,7 +530,14 @@ async function finishGame() {
     });
   } catch(e) { /* 失敗繼續等 */ }
 
-  // 開始輪詢公告
+  // 送出後立刻查一次狀態
+  // 若老師已公告（遲到學生），直接顯示結果不用等輪詢
+  try {
+    const s = await gasGet({ action: 'getStatus' });
+    if (s.status === 'announced') { showResult(); return; }
+  } catch(e) {}
+
+  // 尚未公告，開始輪詢
   startPoll();
 }
 

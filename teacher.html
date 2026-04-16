@@ -117,6 +117,30 @@ body {
 .qbar-fill.wrong   { background:#e74c3c; }
 .qstat-rate { font-size:0.85rem; font-weight:700; color:#FFB347; }
 
+/* 人名明細（hover 才顯示） */
+.qstat-card { position:relative; }
+.who-section {
+  position:absolute; inset:0;
+  background:rgba(13,13,26,0.95);
+  border-radius:12px;
+  padding:14px;
+  opacity:0; pointer-events:none;
+  transition:opacity .18s;
+  overflow-y:auto;
+  display:flex; flex-direction:column; justify-content:center; gap:10px;
+}
+.qstat-card:hover .who-section {
+  opacity:1; pointer-events:auto;
+}
+.who-row { }
+.who-label { font-size:0.72rem; color:rgba(255,255,255,0.45); margin-bottom:4px; }
+.who-chips { display:flex; flex-wrap:wrap; gap:3px; }
+.chip-correct { background:rgba(46,204,113,0.15); border:1px solid rgba(46,204,113,0.35);
+                border-radius:6px; padding:2px 6px; font-size:0.72rem; color:#2ecc71; }
+.chip-wrong   { background:rgba(231,76,60,0.15);  border:1px solid rgba(231,76,60,0.35);
+                border-radius:6px; padding:2px 6px; font-size:0.72rem; color:#e74c3c; }
+.chip-none    { color:rgba(255,255,255,0.25); font-size:0.72rem; font-style:italic; }
+
 /* ── EMPTY STATE ──────────────────────────────── */
 .empty { text-align:center; padding:48px 0; color:rgba(255,255,255,0.25); font-size:0.9rem; }
 
@@ -298,8 +322,10 @@ function render(d) {
   badge.textContent = status === 'announced' ? '已公告成績' : '等待中';
   badge.className   = 'status-badge ' + (status === 'announced' ? 'badge-announced' : 'badge-waiting');
 
-  // 公告按鈕
-  document.getElementById('btn-announce').disabled = status === 'announced';
+  // 公告按鈕（已公告後改為「重新公告」，仍可按，讓遲到學生也能收到）
+  const btnA = document.getElementById('btn-announce');
+  btnA.disabled    = false;
+  btnA.textContent = status === 'announced' ? '重新公告' : '公告成績';
 
   // 排行榜
   const tbody = results.map((r, i) => {
@@ -323,19 +349,41 @@ function render(d) {
   document.getElementById('rank-tbody').innerHTML = tbody ||
     '<tr><td colspan="6" class="empty">尚無資料，等待學生提交…</td></tr>';
 
-  // 各題統計
+  // 各題統計（含人名明細）
   const qGrid = qStats.map(q => {
     const rate     = q.total > 0 ? Math.round(q.correct / q.total * 100) : 0;
     const wrongPct = q.total > 0 ? Math.round(q.wrong   / q.total * 100) : 0;
+    const ans      = q.correctAns || '';
+    const who      = q.who || {};
+
+    // 兩個選項：正確答案 vs 另一個
+    const optA = ans;
+    const optB = ans === '橘子' ? '柳丁' : '橘子';
+
+    function renderChips(names, isCorrectAns) {
+      if (!names || names.length === 0) return `<span class="chip-none">無人作答</span>`;
+      return names.map(n => `<span class="${isCorrectAns ? 'chip-correct' : 'chip-wrong'}">${esc(n)}</span>`).join('');
+    }
+
     return `<div class="qstat-card">
       <img src="${esc(q.src)}" loading="lazy" alt="">
       <div class="qstat-info">
-        <div class="qstat-ans">正確答案：${esc(q.correctAns || '')}</div>
+        <div class="qstat-ans">正確答案：${esc(ans)}</div>
         <div class="qstat-bar-row"><span>✓ 答對 ${q.correct}人</span><span>${rate}%</span></div>
         <div class="qbar"><div class="qbar-fill" style="width:${rate}%"></div></div>
         <div class="qstat-bar-row"><span>✗ 答錯 ${q.wrong}人</span><span>${wrongPct}%</span></div>
         <div class="qbar"><div class="qbar-fill wrong" style="width:${wrongPct}%"></div></div>
         <div class="qstat-rate">答對率 ${rate}%</div>
+        <div class="who-section">
+          <div class="who-row">
+            <div class="who-label">選「${esc(optA)}」（✓ 正確）</div>
+            <div class="who-chips">${renderChips(who[optA], true)}</div>
+          </div>
+          <div class="who-row" style="margin-top:5px">
+            <div class="who-label">選「${esc(optB)}」（✗ 答錯）</div>
+            <div class="who-chips">${renderChips(who[optB], false)}</div>
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('') || '<div class="empty" style="grid-column:1/-1">尚無資料</div>';
