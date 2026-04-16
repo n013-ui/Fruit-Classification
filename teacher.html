@@ -106,9 +106,18 @@ body {
 }
 .qstat-card {
   background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px; overflow:hidden;
+  border-radius:12px; overflow:visible; position:relative;
 }
-.qstat-card img { width:100%; aspect-ratio:1; object-fit:cover; }
+/* 圖片 hover 放大 */
+.qstat-img-wrap { overflow:hidden; border-radius:10px 10px 0 0; }
+.qstat-card img {
+  width:100%; aspect-ratio:1; object-fit:cover; display:block;
+  transition:transform .25s ease; transform-origin:center center;
+  position:relative; z-index:1;
+}
+.qstat-card:hover img { transform:scale(2.4); z-index:30; border-radius:8px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.7); }
+
 .qstat-info { padding:10px; font-size:0.8rem; }
 .qstat-ans  { color:rgba(255,255,255,0.5); margin-bottom:6px; }
 .qstat-bar-row { display:flex; justify-content:space-between; margin-bottom:3px; }
@@ -117,28 +126,26 @@ body {
 .qbar-fill.wrong   { background:#e74c3c; }
 .qstat-rate { font-size:0.85rem; font-weight:700; color:#FFB347; }
 
-/* 人名明細（hover 才顯示） */
-.qstat-card { position:relative; }
-.who-section {
-  position:absolute; inset:0;
-  background:rgba(13,13,26,0.95);
-  border-radius:12px;
-  padding:14px;
-  opacity:0; pointer-events:none;
-  transition:opacity .18s;
-  overflow-y:auto;
-  display:flex; flex-direction:column; justify-content:center; gap:10px;
+/* 人名 tooltip（懸停在「答對」/「答錯」文字上才顯示） */
+.who-trigger {
+  position:relative; cursor:pointer;
+  text-decoration:underline dotted rgba(255,255,255,0.3);
 }
-.qstat-card:hover .who-section {
-  opacity:1; pointer-events:auto;
+.who-trigger:hover { color:#FFB347; }
+.who-tooltip {
+  position:absolute; bottom:calc(100% + 8px); left:0;
+  background:#1a2535; border:1px solid rgba(255,255,255,0.18);
+  border-radius:10px; padding:10px 12px;
+  min-width:150px; max-width:280px;
+  display:flex; flex-wrap:wrap; gap:4px;
+  z-index:100; opacity:0; pointer-events:none;
+  transition:opacity .15s; white-space:normal;
 }
-.who-row { }
-.who-label { font-size:0.72rem; color:rgba(255,255,255,0.45); margin-bottom:4px; }
-.who-chips { display:flex; flex-wrap:wrap; gap:3px; }
+.who-trigger.open .who-tooltip { opacity:1; pointer-events:auto; }
 .chip-correct { background:rgba(46,204,113,0.15); border:1px solid rgba(46,204,113,0.35);
-                border-radius:6px; padding:2px 6px; font-size:0.72rem; color:#2ecc71; }
+                border-radius:6px; padding:2px 7px; font-size:0.72rem; color:#2ecc71; }
 .chip-wrong   { background:rgba(231,76,60,0.15);  border:1px solid rgba(231,76,60,0.35);
-                border-radius:6px; padding:2px 6px; font-size:0.72rem; color:#e74c3c; }
+                border-radius:6px; padding:2px 7px; font-size:0.72rem; color:#e74c3c; }
 .chip-none    { color:rgba(255,255,255,0.25); font-size:0.72rem; font-style:italic; }
 
 /* ── EMPTY STATE ──────────────────────────────── */
@@ -360,30 +367,30 @@ function render(d) {
     const optA = ans;
     const optB = ans === '橘子' ? '柳丁' : '橘子';
 
-    function renderChips(names, isCorrectAns) {
+    function chips(names, cls) {
       if (!names || names.length === 0) return `<span class="chip-none">無人作答</span>`;
-      return names.map(n => `<span class="${isCorrectAns ? 'chip-correct' : 'chip-wrong'}">${esc(n)}</span>`).join('');
+      return names.map(n => `<span class="${cls}">${esc(n)}</span>`).join('');
     }
 
     return `<div class="qstat-card">
-      <img src="${esc(q.src)}" loading="lazy" alt="">
+      <div class="qstat-img-wrap"><img src="${esc(q.src)}" loading="lazy" alt=""></div>
       <div class="qstat-info">
         <div class="qstat-ans">正確答案：${esc(ans)}</div>
-        <div class="qstat-bar-row"><span>✓ 答對 ${q.correct}人</span><span>${rate}%</span></div>
+        <div class="qstat-bar-row">
+          <span class="who-trigger">✓ 答對 ${q.correct}人
+            <div class="who-tooltip">${chips(who[optA], 'chip-correct')}</div>
+          </span>
+          <span>${rate}%</span>
+        </div>
         <div class="qbar"><div class="qbar-fill" style="width:${rate}%"></div></div>
-        <div class="qstat-bar-row"><span>✗ 答錯 ${q.wrong}人</span><span>${wrongPct}%</span></div>
+        <div class="qstat-bar-row">
+          <span class="who-trigger">✗ 答錯 ${q.wrong}人
+            <div class="who-tooltip">${chips(who[optB], 'chip-wrong')}</div>
+          </span>
+          <span>${wrongPct}%</span>
+        </div>
         <div class="qbar"><div class="qbar-fill wrong" style="width:${wrongPct}%"></div></div>
         <div class="qstat-rate">答對率 ${rate}%</div>
-        <div class="who-section">
-          <div class="who-row">
-            <div class="who-label">選「${esc(optA)}」（✓ 正確）</div>
-            <div class="who-chips">${renderChips(who[optA], true)}</div>
-          </div>
-          <div class="who-row" style="margin-top:5px">
-            <div class="who-label">選「${esc(optB)}」（✗ 答錯）</div>
-            <div class="who-chips">${renderChips(who[optB], false)}</div>
-          </div>
-        </div>
       </div>
     </div>`;
   }).join('') || '<div class="empty" style="grid-column:1/-1">尚無資料</div>';
@@ -436,6 +443,21 @@ document.getElementById('gas-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('gas-modal')) closeGasModal();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGasModal(); });
+
+// ── 人名 tooltip 點擊開關 ─────────────────────────────────────
+// 點「答對」/「答錯」文字 → 開啟；點其他地方 → 關閉
+document.addEventListener('click', e => {
+  const trigger = e.target.closest('.who-trigger');
+  // 關閉所有已開啟的 tooltip
+  document.querySelectorAll('.who-trigger.open').forEach(el => {
+    if (el !== trigger) el.classList.remove('open');
+  });
+  // 切換被點到的
+  if (trigger) {
+    trigger.classList.toggle('open');
+    e.stopPropagation();
+  }
+});
 
 // ── 初始化 ────────────────────────────────────────────────────
 document.getElementById('gas-dot').className = 'dot' + (GAS_URL ? ' ok' : '');
