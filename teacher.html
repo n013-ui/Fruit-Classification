@@ -108,15 +108,33 @@ body {
   background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
   border-radius:12px; overflow:visible; position:relative;
 }
-/* 圖片 hover 放大 */
+/* 圖片點擊放大（lightbox） */
 .qstat-img-wrap { overflow:hidden; border-radius:10px 10px 0 0; }
 .qstat-card img {
   width:100%; aspect-ratio:1; object-fit:cover; display:block;
-  transition:transform .25s ease; transform-origin:center center;
-  position:relative; z-index:1;
+  cursor:zoom-in;
 }
-.qstat-card:hover img { transform:scale(2.4); z-index:30; border-radius:8px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.7); }
+
+/* Lightbox */
+#lightbox {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.85); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center;
+}
+#lightbox.open { display:flex; }
+#lightbox img {
+  max-width:90vw; max-height:90vh;
+  object-fit:contain; border-radius:12px;
+  box-shadow:0 16px 60px rgba(0,0,0,0.8);
+  animation:lb-in .18s ease;
+}
+@keyframes lb-in { from { transform:scale(.88); opacity:0; } to { transform:scale(1); opacity:1; } }
+#lightbox-close {
+  position:fixed; top:18px; right:22px;
+  font-size:2rem; line-height:1; color:rgba(255,255,255,0.7);
+  cursor:pointer; background:none; border:none;
+}
+#lightbox-close:hover { color:#fff; }
 
 .qstat-info { padding:10px; font-size:0.8rem; }
 .qstat-ans  { color:rgba(255,255,255,0.5); margin-bottom:6px; }
@@ -249,6 +267,12 @@ body {
 </div>
 
 <!-- ── GAS 設定 Modal ────────────────────────────────────── -->
+<!-- ── Lightbox ──────────────────────────────────────────────── -->
+<div id="lightbox">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
 <div class="modal-bg" id="gas-modal">
   <div class="modal">
     <h3>GAS 雲端設定</h3>
@@ -373,7 +397,7 @@ function render(d) {
     }
 
     return `<div class="qstat-card">
-      <div class="qstat-img-wrap"><img src="${esc(q.src)}" loading="lazy" alt=""></div>
+      <div class="qstat-img-wrap"><img src="${esc(q.src)}" loading="lazy" alt="" onclick="openLightbox('${esc(q.src)}')"></div>
       <div class="qstat-info">
         <div class="qstat-ans">正確答案：${esc(ans)}</div>
         <div class="qstat-bar-row">
@@ -443,6 +467,18 @@ document.getElementById('gas-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('gas-modal')) closeGasModal();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGasModal(); });
+
+// ── Lightbox ──────────────────────────────────────────────────
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
 
 // ── 人名 tooltip 點擊開關 ─────────────────────────────────────
 // 點「答對」/「答錯」文字 → 開啟；點其他地方 → 關閉
